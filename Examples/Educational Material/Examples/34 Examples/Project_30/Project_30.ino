@@ -4,13 +4,13 @@ int clkPin = 8;
 int datPin = 7;
 int rstPin = 6;
 DS1302RTC myRTC(clkPin, datPin, rstPin);
-LiquidCrystal_I2C myLCD(0x3F,16,2);
+LiquidCrystal_I2C myLCD(0x27,16,2);
 void setup()  {      
       myRTC.setDS1302Time(8, 30, 10, 6, 22, 9, 2017);
       myLCD.init();
       myLCD.backlight();
       myLCD.setCursor(1, 0);
-      myLCD.print("KankashTech.com");
+      myLCD.print("Clock Module");
       delay (3000);
       myLCD.clear();
 }                                                                                                     
