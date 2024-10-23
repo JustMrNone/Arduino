@@ -11,7 +11,7 @@ void setup() {
       MYLCD.init();
       MYLCD.backlight();
       MYLCD.setCursor(1, 0);
-      MYLCD.print("Sound Detector");
+      MYLCD.print("Flame Detector");
       delay (3000);
 }
  
@@ -29,7 +29,6 @@ void loop() {
                MYLCD.setCursor(11, 0);
                MYLCD.print (digitalState);   
 
-               
                if (digitalState == 0) {
                  digitalWrite (ledPin, LOW);
                }
@@ -37,13 +36,14 @@ void loop() {
                  digitalWrite (ledPin, HIGH);
                }
 
-               
                MYLCD.setCursor(2, 1);
-               if (sensorValue <100) {
-                    MYLCD.print("No Sound");
-              }
-              else {
-                    MYLCD.print("Sound Detected");
-              }
-              delay (200);
+
+               if (sensorValue > 500) {
+                    MYLCD.print("No Flame");
+               }
+               else {
+                    MYLCD.print("Flame Detected");
+               }
+               delay (200);
 }
+ 

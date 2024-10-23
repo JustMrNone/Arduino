@@ -6,7 +6,7 @@ void setup() {
  }
 void loop() {
                int sensorValue = analogRead (sensorPin);
-              if (sensorValue > 500 ) {
+              if (sensorValue > 100 ) {
                     digitalWrite (ledPin, LOW);
               }
                else {
@@ -16,4 +16,3 @@ void loop() {
                delay (200);
 }
  
-

@@ -1,5 +1,5 @@
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C MYLCD (0x3F, 16, 2);  //replace 0x3F with 0x27 if nothing shows up
+LiquidCrystal_I2C MYLCD (0x27, 16, 2);  //replace 0x3F with 0x27 if nothing shows up
 
 int sensorPin=A0;
 int digitalPin = 7;
@@ -11,7 +11,7 @@ void setup() {
       MYLCD.init();
       MYLCD.backlight();
       MYLCD.setCursor(1, 0);
-      MYLCD.print("KankashTech.com");
+      MYLCD.print("Flame Detector");
       delay (3000);
 }
  
