@@ -1,5 +1,5 @@
 #include <LiquidCrystal_I2C.h>
-LiquidCrystal_I2C MYLCD (0x3F, 16, 2);  //replace 0x3F with 0x27 if nothing shows up
+LiquidCrystal_I2C MYLCD (0x27, 16, 2);  //replace 0x3F with 0x27 if nothing shows up
 
 int pirPin=7;
 int ledPin=8;
@@ -10,7 +10,7 @@ void setup() {
                MYLCD.init ();
                MYLCD.backlight();
                MYLCD.setCursor(1, 0);
-               MYLCD.print("KankashTech.com");
+               MYLCD.print("Hello, World! ");
                delay (3000);
                
 }
