@@ -1,6 +1,6 @@
 #include <TM1637Display.h>
-int CLK= 8;
-int DIO= 9;
+int CLK= 4;
+int DIO= 3;
 TM1637Display myTM(CLK, DIO);
 byte data[] = { 63, 63, 63 , 63 };
 int n1 = 0;

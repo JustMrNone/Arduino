@@ -13,7 +13,7 @@ void setup() {
   
   // Print "Hello" to the LCD
   MYLCD.setCursor(0, 0);  // Set the cursor to column 0, line 0
-  MYLCD.print("Hello There I am \n here");
+  MYLCD.print("Hello There");
 }
 
 void loop() {

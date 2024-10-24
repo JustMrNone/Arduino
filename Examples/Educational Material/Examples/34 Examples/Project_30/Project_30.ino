@@ -5,6 +5,8 @@ int datPin = 7;
 int rstPin = 6;
 DS1302RTC myRTC(clkPin, datPin, rstPin);
 LiquidCrystal_I2C myLCD(0x27,16,2);
+NEW SKETCH
+
 void setup()  {      
       myRTC.setDS1302Time(8, 30, 10, 6, 22, 9, 2017);
       myLCD.init();
