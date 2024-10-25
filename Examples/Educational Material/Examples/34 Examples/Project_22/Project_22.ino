@@ -1,5 +1,5 @@
-int sensorPin=A0;
-int relayPin= 2;
+
+int relayPin= 6;
 
 void setup() {
     pinMode (relayPin, OUTPUT);
@@ -7,15 +7,7 @@ void setup() {
     Serial.begin (9600);
 }
 void loop() {
-    int sensorValue=analogRead(sensorPin);
-    if (sensorValue<400) {
-        digitalWrite (relayPin, LOW);
-        Serial.println("Relay Activated");
-    }
-    else {
-        digitalWrite (relayPin, HIGH);
-    }
-    Serial.println(sensorValue);
-    delay(200);
+    digitalWrite (relayPin, LOW);
+    Serial.println("Relay Activated");
 }
 
