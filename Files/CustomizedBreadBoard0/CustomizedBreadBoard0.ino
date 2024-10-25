@@ -1,23 +1,89 @@
 #include <LiquidCrystal_I2C.h>
 #include <IRremote.h>
+
 void ModeOne();
 int UltraSonic();
 void HexaIRreciever();
 void ModeThree();
 void ChangeBrightness();
+void lightSensor();
+// Red Variations
+void RED();
+void R1();
+void R2();
+void R3();
+
+// Green Variations
+void GREEN();
+void G1();
+void G2();
+void G3();
+
+// Blue Variations
+void BLUE();
+void BL1();
+void B2();
+void B3();
+
+// Primary Colors
+void YELLOW();
+void CYAN();
+void MAGENTA();
+
+// Warm Colors
+void ORANGE();
+void CORAL();
+void PEACH();
+
+// Cool Colors
+void TURQUOISE();
+void SKYBLUE();
+void LAVENDER();
+
+// Purple Variations
+void VIOLET();
+void PLUM();
+
+// Pastel Colors
+void MINT();
+void SALMON();
+void ROSE();
+
+// Darker Shades
+void BURGUNDY();
+void FOREST();
+void NAVY();
+
+// Special Effects
+void GOLD();
+void SILVER();
+void BRONZE();
+
+// Whites
+void WHITE();
+void BRIGHT_WHITE();
+void SOFT_WHITE();
+void WARM_WHITE();
+void COOL_WHITE();
+
+void SPECTRUM();
+void ENHANCED_SPECTRUM();
+
 // UltraSonic Sensor 
 int Trig = 3;
 int Echo = 2;
 int duration, distance; 
 int reciever = 5;
 
+//light sensor 
+int sensorPin = A0;
+int digitalPin = 7;
+int ledPin = 6;
 
 //RGB Light Pins 
 int redPin = 11;
 int greenPin = 9;
 int bluePin = 10;
-
-
 
 //LCD config
 LiquidCrystal_I2C LCD(0x27, 16, 2);
@@ -37,6 +103,17 @@ unsigned long button7 = 0xFF42BD;
 unsigned long button8 = 0xFF4AB5;
 unsigned long button9 = 0xFF52AD;
 unsigned long button0 = 0xFF6897;
+unsigned long button100 = 0xFF9867;
+unsigned long button200 = 0xFFB04F;
+unsigned long minus = 0xFFE01F; 
+unsigned long plus = 0xFFA857;
+unsigned long eq = 0xFF906F;
+unsigned long prevv = 0xFF22DD; 
+unsigned long nextt = 0xFF02FD;
+unsigned long PlayPause = 0xFFC23D;
+unsigned long chpluse = 0xFFE21D;
+unsigned long chminus = 0xFFA25D;
+unsigned long chhh = 0xFF629D;
 
 //other controller 
 
@@ -44,26 +121,26 @@ unsigned long REDB = 0xF720DF;
 unsigned long GREENB = 0xF7A05F;
 unsigned long BLUEB = 0xF7609F;
 unsigned long WHITEB = 0xF7E01F;
-
 unsigned long R1B = 0xF710EF;
 unsigned long R2B= 0xF730CF;
 unsigned long R3B= 0xF708F7;
-
 unsigned long G1B =  0xF7906F;
 unsigned long G2B = 0xF7B04F;
 unsigned long G3B = 0xF78877;
-
 unsigned long B1B = 0xF750AF;
 unsigned long B2B = 0xF7708F;
 unsigned long B3B = 0xF748B7;
-
-
 unsigned long BrightnessUp = 0xF700FF;
 unsigned long BrightnessDown = 0xF7807F;
-
 unsigned long OFF = 0xF740BF;
 unsigned long ON = 0xF7C03F;
-
+unsigned long Play = 0xF7A857;
+unsigned long Next = 0xF76897;
+unsigned long Prev = 0xF728D7;
+unsigned long Smooth = 0xF7E817;
+unsigned long Fade = 0xF7C837;
+unsigned long strobe = 0xF7F00F;
+unsigned long Flash = 0xF7D02F;
 float brightnessFactor = 1.0;
 // Variables for brightness levels
 
@@ -74,16 +151,17 @@ void setup() {
   Serial.begin(9600);
   pinMode(Trig, OUTPUT);
   pinMode(Echo, INPUT);
-
   // Setup for LCD
   LCD.begin(16, 2);
   LCD.backlight();
   LCD.setCursor(0, 0);
+  //light
+  pinMode (digitalPin, INPUT_PULLUP);
+  pinMode (ledPin, OUTPUT);
   //LCD.print("Test.");
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
-
   //IR
   Reciever.enableIRIn();
 
@@ -92,10 +170,11 @@ void setup() {
 void loop() {
   //HexaIRreciever();
   //ModeOne();
-  ModeThree();
-  Serial.print(brightnessFactor);
-  Serial.print("\n");
-  delay(300);
+ // ModeThree();
+  //Serial.print(brightnessFactor);
+ // Serial.print("\n");
+ // delay(300);
+ lightSensor();
 }
 
 //Mode One
@@ -146,8 +225,7 @@ void HexaIRreciever()
   }
 }
 
-
-
+//Mode three
 void ModeThree() {
   if (Reciever.decode(&results)) {
     unsigned long value = results.value;
@@ -573,8 +651,36 @@ void ENHANCED_SPECTRUM() {
 }
 
 
+//ModeFour 
+void lightSensor()
+{
+  int sensorValue = analogRead(sensorPin);
+  int digitalState = digitalRead(digitalPin);
+  LCD.clear();
+  LCD.setCursor(0, 0);
+  LCD.print("A: ");
+  LCD.setCursor(3, 0);
+  LCD.print(sensorValue);
+  LCD.setCursor(8, 0);
+  LCD.print("D: ");
+  LCD.setCursor(11, 0);
+  LCD.print(digitalState);
 
+  if (digitalState == 0) {
+      digitalWrite(ledPin, LOW);
+  } else {
+      digitalWrite(ledPin, HIGH);
+  }
 
+  LCD.setCursor(2, 1);
+  if (sensorValue < 100) {
+      LCD.print("DARK");
+  } else {
+      LCD.print("LIGHT");
+  }
+  delay(200);
+
+}
 
 
 
