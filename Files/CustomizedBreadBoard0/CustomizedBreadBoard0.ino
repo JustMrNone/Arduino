@@ -1,70 +1,43 @@
 #include <LiquidCrystal_I2C.h>
 #include <IRremote.h>
 
+void initializeLCD();
 void ModeOne();
 int UltraSonic();
 void HexaIRreciever();
-void ModeThree();
+void MainMode();
 void ChangeBrightness();
 void lightSensor();
+void ClickerButton();
+void startlcd();
+void OFF();
+void Flash(int dur);
+void NextPrev(int Value);
+
+
 // Red Variations
 void RED();
 void R1();
 void R2();
 void R3();
-
+void YELLOW();
 // Green Variations
 void GREEN();
 void G1();
 void G2();
 void G3();
+void G4();
 
 // Blue Variations
 void BLUE();
 void BL1();
 void B2();
 void B3();
-
-// Primary Colors
-void YELLOW();
-void CYAN();
-void MAGENTA();
-
-// Warm Colors
-void ORANGE();
-void CORAL();
-void PEACH();
-
-// Cool Colors
-void TURQUOISE();
-void SKYBLUE();
-void LAVENDER();
-
-// Purple Variations
-void VIOLET();
-void PLUM();
-
-// Pastel Colors
-void MINT();
-void SALMON();
-void ROSE();
-
-// Darker Shades
-void BURGUNDY();
-void FOREST();
-void NAVY();
-
-// Special Effects
-void GOLD();
-void SILVER();
-void BRONZE();
+void B4();
 
 // Whites
 void WHITE();
-void BRIGHT_WHITE();
-void SOFT_WHITE();
-void WARM_WHITE();
-void COOL_WHITE();
+
 
 void SPECTRUM();
 void ENHANCED_SPECTRUM();
@@ -74,6 +47,13 @@ int Trig = 3;
 int Echo = 2;
 int duration, distance; 
 int reciever = 5;
+
+//clickers 
+
+int clickbutton  = 4;
+int clickbutton1 = 12;
+int clickbutton2 = 13;
+int clickbutton3 = 8;
 
 //light sensor 
 int sensorPin = A0;
@@ -132,7 +112,7 @@ unsigned long B2B = 0xF7708F;
 unsigned long B3B = 0xF748B7;
 unsigned long BrightnessUp = 0xF700FF;
 unsigned long BrightnessDown = 0xF7807F;
-unsigned long OFF = 0xF740BF;
+unsigned long OFFbtn = 0xF740BF;
 unsigned long ON = 0xF7C03F;
 unsigned long Play = 0xF7A857;
 unsigned long Next = 0xF76897;
@@ -140,7 +120,7 @@ unsigned long Prev = 0xF728D7;
 unsigned long Smooth = 0xF7E817;
 unsigned long Fade = 0xF7C837;
 unsigned long strobe = 0xF7F00F;
-unsigned long Flash = 0xF7D02F;
+unsigned long Flashbtn = 0xF7D02F;
 float brightnessFactor = 1.0;
 // Variables for brightness levels
 
@@ -162,19 +142,30 @@ void setup() {
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
+
+    // Enable internal pull-ups for button pins
+  pinMode(clickbutton, INPUT_PULLUP);
+  pinMode(clickbutton1, INPUT_PULLUP);
+  pinMode(clickbutton2, INPUT_PULLUP);
+  pinMode(clickbutton3, INPUT_PULLUP);
   //IR
   Reciever.enableIRIn();
+  initializeLCD();
+  delay(300);
 
 }
 
 void loop() {
   //HexaIRreciever();
-  //ModeOne();
- // ModeThree();
+
+  MainMode();
   //Serial.print(brightnessFactor);
  // Serial.print("\n");
  // delay(300);
- lightSensor();
+ //lightSensor();
+ //ClickerButton();
+ //ENHANCED_SPECTRUM();
+
 }
 
 //Mode One
@@ -226,76 +217,118 @@ void HexaIRreciever()
 }
 
 //Mode three
-void ModeThree() {
+void MainMode() {
   if (Reciever.decode(&results)) {
     unsigned long value = results.value;
+    if(value == REDB) {
+      startlcd();
+      LCD.print("Red Light.");
+      RED();
+    }
+    else if(value == GREENB) {
+      startlcd();
+      LCD.print("Green Light.");
+      GREEN();
+    }
+    else if(value == BLUEB) {
+      startlcd();
+      LCD.print("Blue Light.");
+      BLUE();
+    }
+    else if(value == OFFbtn)
+    {
+      OFF();
+      startlcd();
+      LCD.print("OFF.");
+    }
+    else if(value == WHITEB) {
+      startlcd();
+      LCD.print("White Light.");
+      WHITE();
+    }
+    else if(value == R1B) {
+      startlcd();
+      LCD.print("Orange Light.");
+      R2();
+    }
+    else if(value == R2B) {
+      startlcd();
+      LCD.print("Amber light.");
+      R3();
+    }
+    else if(value == R3B) {
+      startlcd();
+      LCD.print("Yellow Light.");
+      YELLOW();
+    }
+    else if(value == G1B) {
+      startlcd();
+      LCD.print("Teal Light.");
+      G2();
+    }
+    else if(value == G2B) {
+      startlcd();
+      LCD.print("Turquoise Light.");
+      G3();
+    }
+    else if(value == G3B) {
+      startlcd();
+      LCD.print("Cyan Light.");
+      G4();
+    }
+    else if(value == B1B) {
+      startlcd();
+      LCD.print("Purple Light.");
+      B2();
+    }
+    else if(value == B2B) {
+      startlcd();
+      LCD.print("Violet Light.");        
+      B3();
+    }
+    else if(value == B3B) {
+      startlcd();
+      LCD.print("Pink light.");
+      B4();
+    }
+    else if (value == Next || value == Prev || value == Play) {
+      NextPrev(value);
+    }
+    else if (value == Flashbtn) {
+      int duration = 200;
+      startlcd();
+      LCD.print("Flashing Mode.");
 
-    // Check for brightness control first
-    if (value == BrightnessUp || value == BrightnessDown) {
-      ChangeBrightness(value);
-    } 
-    else {
-      if(value == button1) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Red Light.");
-        Serial.println(brightnessFactor);
-        RED();
-      }
-      else if(value == button2) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Green Light.");
-        GREEN();
-      }
-      else if(value == button3) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Blue Light.");
-        BLUE();
-      }
-      else if(value == button4) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Yellow Light.");
-        YELLOW();
-      }
-      else if(value == button5) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Cyan Light.");
-        CYAN();
-      }
-      else if(value == button6) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("Magenta Light.");
-        MAGENTA();
-      }
-      else if(value == button7) {
-        LCD.clear();
-        LCD.setCursor(0, 1);
-        LCD.print("White Light.");
-        WHITE();
+      // Flashing mode loop, break if another button is pressed
+      while (true) {
+        Flash(duration);  // Flash the light for a specified duration
+
+        // Check if any other button is pressed while flashing
+        if (Reciever.decode(&results)) {
+            unsigned long newValue = results.value;
+
+            // If any valid button is pressed, break the loop and handle the new value
+            if (newValue != Flashbtn) {
+
+                Reciever.resume(); // Resume the receiver for future inputs
+                value = newValue;  // Update the value to handle it outside the loop
+                break;
+            }
+            // Reset the receiver to listen for new signals
+            Reciever.resume();
+        }
       }
     }
     Reciever.resume();  // Prepare for the next signal
   }
 }
 
-void ChangeBrightness(unsigned long brightnessValue) {
-  if (brightnessValue == BrightnessUp) {
-    brightnessFactor += 0.1;
-  } else if (brightnessValue == BrightnessDown) {
-    brightnessFactor -= 0.1;
-  }
-
-  if (brightnessFactor < 0) {
-    brightnessFactor = 0;
-  } else if (brightnessFactor > 1) {
-    brightnessFactor = 1;
-  }
+void startlcd()
+{
+  LCD.clear();
+  LCD.setCursor(0, 1);
 }
+
 //Colors 
 void setColor(int redValue, int greenValue, int blueValue) {
     analogWrite(redPin, redValue);
@@ -307,349 +340,60 @@ void setColor(int redValue, int greenValue, int blueValue) {
 void RED() {
     setColor(255, 0, 0);  // Full intensity of red
 }
-void R1() {  // Bright red
-    setColor(255, 0, 0);  // Full red
-}
 void R2() {  // Orange-red
-    setColor(255, 127, 0);  // Some green to create orange
+    setColor(255, 10, 0);  // Some green to create orange
 }
 void R3() {  // Yellow
-    setColor(255, 255, 0);  // Full red and green to create yellow
+    setColor(255, 20, 0);  // Full red and green to create yellow
+}
+void YELLOW() {
+    setColor(255, 40, 0);  // Full intensity of red and some green
 }
 
 // Green Variations
 void GREEN() {
     setColor(0, 255, 0);  // Full intensity of green
 }
-void G1() {  // Bright green
-    setColor(0, 255, 0);  // Full green
-}
 void G2() {  // Cyan-green
-    setColor(0, 255, 127);  // Some blue
+    setColor(0, 255, 100);  // Some blue
 }
 void G3() {  // Blue-green
     setColor(0, 255, 255);  // Full blue
 }
-
+void G4() {
+    setColor(0, 50, 255); 
+}
 // Blue Variations
 void BLUE() {
     setColor(0, 0, 255);  // Full intensity of blue
 }
-void BL1() {  // Bright blue
-    setColor(0, 0, 255);  // Full blue
-}
 void B2() {  // Purple-blue
-    setColor(127, 0, 255);  // Some red
+    setColor(255, 100, 200);  // Some red
 }
 void B3() {  // Magenta-blue
-    setColor(255, 0, 255);  // Full red and blue
+    setColor(255, 50, 150);  
+}
+void B4() {
+    setColor(255, 25, 50);  
 }
 
-// Primary Colors
-void YELLOW() {
-    setColor(255, 255, 0);  // Full intensity of red and green
+void OFF() {
+    setColor(0, 0, 0);
 }
-void CYAN() {
-    setColor(0, 255, 255);  // Full intensity of green and blue
-}
-void MAGENTA() {
-    setColor(255, 0, 255);  // Full intensity of red and blue
-}
+// White
 
-// Warm Colors
-void ORANGE() {
-    setColor(255, 165, 0);  // Partial green for orange
-}
-void CORAL() {
-    setColor(255, 127, 80);  // Less green and small blue
-}
-void PEACH() {
-    setColor(255, 218, 185);  // Most green and some blue
-}
-
-// Cool Colors
-void TURQUOISE() {
-    setColor(64, 224, 208);  // Small red, most green, most blue
-}
-void SKYBLUE() {
-    setColor(135, 206, 235);  // Some red, most green, full blue
-}
-void LAVENDER() {
-    setColor(230, 230, 250);  // Most red and green, full blue
-}
-
-// Purple Variations
-void VIOLET() {
-    setColor(238, 130, 238);  // Most red, some green, most blue
-}
-void PLUM() {
-    setColor(221, 160, 221);  // Most red and blue, some green
-}
-
-// Pastel Colors
-void MINT() {
-    setColor(189, 252, 201);  // Some red, full green, most blue
-}
-void SALMON() {
-    setColor(250, 128, 114);  // Full red, some green and blue
-}
-void ROSE() {
-    setColor(255, 192, 203);  // Full red, most green and blue
-}
-
-// Darker Shades
-void BURGUNDY() {
-    setColor(128, 0, 32);  // Half red, no green, small blue
-}
-void FOREST() {
-    setColor(34, 139, 34);  // Small red, half green, small blue
-}
-void NAVY() {
-    setColor(0, 0, 128);  // Half blue
-}
-
-// Special Effects
-void GOLD() {
-    setColor(255, 215, 0);  // Full red, most green, no blue
-}
-void SILVER() {
-    setColor(192, 192, 192);  // Most red, green, and blue
-}
-void BRONZE() {
-    setColor(205, 127, 50);  // Most red, half green, small blue
-}
-
-// Whites
 void WHITE() {
-    setColor(255, 255, 255);  // Full intensity of all colors
-}
-void BRIGHT_WHITE() {
-    setColor(255, 255, 255);  // 100% intensity
-}
-void SOFT_WHITE() {
-    setColor(200, 200, 200);  // ~78% intensity for all colors
-}
-void WARM_WHITE() {
-    setColor(255, 240, 220);  // Full red, less green, even less blue
-}
-void COOL_WHITE() {
-    setColor(220, 230, 255);  // Less red, slightly less green, full blue
+    setColor(255, 100, 100);  // Full intensity of all colors
 }
 
-//Logic For Spectrum 
-void SPECTRUM() {
-  int redIntensity = 0;
-  int greenIntensity = 0;
-  int blueIntensity = 0;
-
-  // Fade from Red -> Yellow -> Green
-  for (greenIntensity = 0; greenIntensity <= 255; greenIntensity++) {
-    analogWrite(redPin, 255);
-    analogWrite(greenPin, greenIntensity);
-    analogWrite(bluePin, 0);
-    delay(20);
-  }
-
-  // Fade from Green -> Cyan -> Blue
-  for (redIntensity = 255; redIntensity >= 0; redIntensity--) {
-    analogWrite(redPin, redIntensity);
-    analogWrite(greenPin, 255);
-    analogWrite(bluePin, 0);
-    delay(20);
-  }
-  
-  for (blueIntensity = 0; blueIntensity <= 255; blueIntensity++) {
-    analogWrite(redPin, 0);
-    analogWrite(greenPin, 255);
-    analogWrite(bluePin, blueIntensity);
-    delay(20);
-  }
-
-  // Fade from Blue -> Magenta -> Red
-  for (greenIntensity = 255; greenIntensity >= 0; greenIntensity--) {
-    analogWrite(redPin, 0);
-    analogWrite(greenPin, greenIntensity);
-    analogWrite(bluePin, 255);
-    delay(20);
-  }
-
-  for (redIntensity = 0; redIntensity <= 255; redIntensity++) {
-    analogWrite(redPin, redIntensity);
-    analogWrite(greenPin, 0);
-    analogWrite(bluePin, 255);
-    delay(20);
-  }
-
-  // Fade from Magenta -> White -> Off
-  for (greenIntensity = 0; greenIntensity <= 255; greenIntensity++) {
-    analogWrite(redPin, 255);
-    analogWrite(greenPin, greenIntensity);
-    analogWrite(bluePin, 255);
-    delay(20);
-  }
-  
-  for (redIntensity = 255; redIntensity >= 0; redIntensity--) {
-    analogWrite(redPin, redIntensity);
-    analogWrite(greenPin, redIntensity);
-    analogWrite(bluePin, redIntensity);
-    delay(20);
-  }
-
-  LCD.clear();
+void initializeLCD() {
+  LCD.begin(16, 2);
+  LCD.backlight();
+  LCD.setCursor(0, 0);
+  LCD.print("This Some LCD");
+  LCD.setCursor(0, 1);
+  LCD.print("Enter Mode.");
 }
-
-void ENHANCED_SPECTRUM() {
-    int redIntensity = 0;
-    int greenIntensity = 0;
-    int blueIntensity = 0;
-    
-    // Start with deep red (infrared transition)
-    for (redIntensity = 0; redIntensity <= 255; redIntensity++) {
-        analogWrite(redPin, redIntensity);
-        analogWrite(greenPin, 0);
-        analogWrite(bluePin, 0);
-        delay(15);
-    }
-
-    // Red to Orange
-    for (greenIntensity = 0; greenIntensity <= 165; greenIntensity++) {
-        analogWrite(redPin, 255);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 0);
-        delay(15);
-    }
-
-    // Orange to Yellow
-    for (greenIntensity = 166; greenIntensity <= 255; greenIntensity++) {
-        analogWrite(redPin, 255);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 0);
-        delay(15);
-    }
-
-    // Yellow to Chartreuse
-    for (redIntensity = 255; redIntensity >= 127; redIntensity--) {
-        analogWrite(redPin, redIntensity);
-        analogWrite(greenPin, 255);
-        analogWrite(bluePin, 0);
-        delay(15);
-    }
-
-    // Chartreuse to Green
-    for (redIntensity = 127; redIntensity >= 0; redIntensity--) {
-        analogWrite(redPin, redIntensity);
-        analogWrite(greenPin, 255);
-        analogWrite(bluePin, 0);
-        delay(15);
-    }
-
-    // Green to Spring Green
-    for (blueIntensity = 0; blueIntensity <= 127; blueIntensity++) {
-        analogWrite(redPin, 0);
-        analogWrite(greenPin, 255);
-        analogWrite(bluePin, blueIntensity);
-        delay(15);
-    }
-
-    // Spring Green to Cyan
-    for (blueIntensity = 128; blueIntensity <= 255; blueIntensity++) {
-        analogWrite(redPin, 0);
-        analogWrite(greenPin, 255);
-        analogWrite(bluePin, blueIntensity);
-        delay(15);
-    }
-
-    // Cyan to Azure
-    for (greenIntensity = 255; greenIntensity >= 127; greenIntensity--) {
-        analogWrite(redPin, 0);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Azure to Blue
-    for (greenIntensity = 127; greenIntensity >= 0; greenIntensity--) {
-        analogWrite(redPin, 0);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Blue to Violet
-    for (redIntensity = 0; redIntensity <= 127; redIntensity++) {
-        analogWrite(redPin, redIntensity);
-        analogWrite(greenPin, 0);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Violet to Purple
-    for (redIntensity = 128; redIntensity <= 255; redIntensity++) {
-        analogWrite(redPin, redIntensity);
-        analogWrite(greenPin, 0);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Purple to Pink
-    for (greenIntensity = 0; greenIntensity <= 192; greenIntensity++) {
-        analogWrite(redPin, 255);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Pink to White
-    for (greenIntensity = 193; greenIntensity <= 255; greenIntensity++) {
-        analogWrite(redPin, 255);
-        analogWrite(greenPin, greenIntensity);
-        analogWrite(bluePin, 255);
-        delay(15);
-    }
-
-    // Optional: Fade to Black (complete spectrum)
-    for (int i = 255; i >= 0; i--) {
-        analogWrite(redPin, i);
-        analogWrite(greenPin, i);
-        analogWrite(bluePin, i);
-        delay(15);
-    }
-
-    // Optional: Rainbow Pulse Effect
-    for (int i = 0; i < 2; i++) {
-        // Quick pulse through primary and secondary colors
-        int colors[][3] = {
-            {255, 0, 0},    // Red
-            {255, 127, 0},  // Orange
-            {255, 255, 0},  // Yellow
-            {0, 255, 0},    // Green
-            {0, 255, 255},  // Cyan
-            {0, 0, 255},    // Blue
-            {127, 0, 255},  // Violet
-            {255, 0, 255}   // Magenta
-        };
-
-        for (int j = 0; j < 8; j++) {
-            // Fade in
-            for (int k = 0; k <= 255; k++) {
-                analogWrite(redPin, (colors[j][0] * k) / 255);
-                analogWrite(greenPin, (colors[j][1] * k) / 255);
-                analogWrite(bluePin, (colors[j][2] * k) / 255);
-                delay(5);
-            }
-            // Fade out
-            for (int k = 255; k >= 0; k--) {
-                analogWrite(redPin, (colors[j][0] * k) / 255);
-                analogWrite(greenPin, (colors[j][1] * k) / 255);
-                analogWrite(bluePin, (colors[j][2] * k) / 255);
-                delay(5);
-            }
-        }
-    }
-
-    LCD.clear();
-}
-
 
 //ModeFour 
 void lightSensor()
@@ -681,6 +425,78 @@ void lightSensor()
   delay(200);
 
 }
+//Flashing
+void Flash(int dur)
+{
+  setColor(255, 100, 100);
+  delay(dur);
+  OFF();
+  delay(dur);
+}
+
+void NextPrev(unsigned long value) {
+    // Declare an array of function pointers for the colors
+    startlcd();
+
+    void (*colorFunctions[])(void) = {
+        RED, R2, R3, YELLOW,        // Red Variations
+        GREEN, G2, G3, G4,          // Green Variations
+        BLUE, B2, B3, B4, 
+        WHITE,          // Blue Variations
+        OFF                        // Off state
+    };
+
+
+    static int n = 0; // Use static to retain value across function calls
+    int totalColors = sizeof(colorFunctions) / sizeof(colorFunctions[0]);
+
+    // Check if we need to go to the next or previous color
+    if (value == Next) {
+        n = (n + 1) % totalColors; // Increment and wrap around using modulo
+    } else if (value == Prev) {
+        n = (n - 1 + totalColors) % totalColors; // Decrement and wrap around (avoid negative index)
+    }
+    if(n == 0)
+      LCD.print("Red Light.");
+    else if(n == 1)
+      LCD.print("Orange Light.");
+    else if(n == 2)
+      LCD.print("Amber Light.");
+    else if(n == 3)
+      LCD.print("Yellow Light.");
+    else if(n == 4)
+    //Green
+      LCD.print("Green Light.");
+    else if(n == 5)
+      LCD.print("Teal  light.");
+    else if(n == 6)
+      LCD.print("Turquoise Light.");
+    else if(n == 7)
+      LCD.print("Cyan Light.");
+    else if(n == 8)
+    //Blue
+      LCD.print("Blue Light.");
+    else if(n == 9)
+      LCD.print("Purple Light.");
+    else if(n == 10)
+      LCD.print("Violet Light.");
+    else if(n == 11)
+      LCD.print("Pink Light.");
+    else if(n == 12)
+      LCD.print("White Light.");
+    else if(n == 13)
+      LCD.print("OFF.");
+    
+    
+    // Call the current function in the array
+    colorFunctions[n](); // Execute the function at index n
+}
+
+
+
+
+
+
 
 
 
