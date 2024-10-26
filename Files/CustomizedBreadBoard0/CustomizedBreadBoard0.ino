@@ -156,15 +156,8 @@ void setup() {
 }
 
 void loop() {
-  //HexaIRreciever();
-
-  MainMode();
-  //Serial.print(brightnessFactor);
- // Serial.print("\n");
- // delay(300);
- //lightSensor();
- //ClickerButton();
- //ENHANCED_SPECTRUM();
+  //main mode 
+ MainMode();
 
 }
 
@@ -205,88 +198,88 @@ int UltraSonic() {
 }
 
 //Mode Two
-void HexaIRreciever()
-{
+void HexaIRreciever() {
   if (Reciever.decode(&results)) {
     LCD.clear();
     LCD.print("Value: ");
     LCD.print(results.value, HEX);
-    
+
     Reciever.resume();  // Receive the next value
   }
 }
 
-//Mode three
+// Mode three
 void MainMode() {
   if (Reciever.decode(&results)) {
+
     unsigned long value = results.value;
-    if(value == REDB) {
+
+    if (value == REDB) {
       startlcd();
       LCD.print("Red Light.");
       RED();
     }
-    else if(value == GREENB) {
+    else if (value == GREENB) {
       startlcd();
       LCD.print("Green Light.");
       GREEN();
     }
-    else if(value == BLUEB) {
+    else if (value == BLUEB) {
       startlcd();
       LCD.print("Blue Light.");
       BLUE();
     }
-    else if(value == OFFbtn)
-    {
+    else if (value == OFFbtn) {
       OFF();
       startlcd();
       LCD.print("OFF.");
     }
-    else if(value == WHITEB) {
+    else if (value == WHITEB) {
       startlcd();
       LCD.print("White Light.");
       WHITE();
     }
-    else if(value == R1B) {
+    else if (value == R1B) {
       startlcd();
       LCD.print("Orange Light.");
       R2();
     }
-    else if(value == R2B) {
+    else if (value == R2B) {
       startlcd();
       LCD.print("Amber light.");
       R3();
     }
-    else if(value == R3B) {
+    else if (value == R3B) {
       startlcd();
       LCD.print("Yellow Light.");
       YELLOW();
     }
-    else if(value == G1B) {
+    else if (value == G1B) {
       startlcd();
       LCD.print("Teal Light.");
       G2();
     }
-    else if(value == G2B) {
+    else if (value == G2B) {
       startlcd();
       LCD.print("Turquoise Light.");
       G3();
     }
-    else if(value == G3B) {
+    else if (value == G3B) {
       startlcd();
       LCD.print("Cyan Light.");
       G4();
     }
-    else if(value == B1B) {
+    else if (value == B1B) {
       startlcd();
       LCD.print("Purple Light.");
       B2();
     }
-    else if(value == B2B) {
+    else if (value == B2B) {
       startlcd();
-      LCD.print("Violet Light.");        
+      LCD.print("Violet Light.");
       B3();
     }
-    else if(value == B3B) {
+    else if (value == B3B) {
       startlcd();
       LCD.print("Pink light.");
       B4();
@@ -305,23 +298,40 @@ void MainMode() {
 
         // Check if any other button is pressed while flashing
         if (Reciever.decode(&results)) {
-            unsigned long newValue = results.value;
+          unsigned long newValue = results.value;
 
-            // If any valid button is pressed, break the loop and handle the new value
-            if (newValue != Flashbtn) {
+          // If any valid button is pressed, break the loop and handle the new value
+          if (newValue != Flashbtn) {
 
-                Reciever.resume(); // Resume the receiver for future inputs
-                value = newValue;  // Update the value to handle it outside the loop
-                break;
-            }
-            // Reset the receiver to listen for new signals
-            Reciever.resume();
+            Reciever.resume();  // Resume the receiver for future inputs
+            value = newValue;   // Update the value to handle it outside the loop
+            break;
+          }
+          // Reset the receiver to listen for new signals
+          Reciever.resume();
         }
       }
     }
+    else if (value == strobe) {
+      while(true) {
+        ModeOne();
+        if (Reciever.decode(&results)) {
+          unsigned long newValue = results.value;
+
+          if (newValue != strobe) {
+            value = newValue;
+            break;
+          }
+          Reciever.resume();
+        }
+      }
+      
+    }
+
     Reciever.resume();  // Prepare for the next signal
   }
 }
+
 
 void startlcd()
 {
@@ -491,8 +501,6 @@ void NextPrev(unsigned long value) {
     // Call the current function in the array
     colorFunctions[n](); // Execute the function at index n
 }
-
-
 
 
 
