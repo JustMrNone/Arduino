@@ -1,6 +1,6 @@
 #include <LiquidCrystal_I2C.h>
 #include <IRremote.h>
-
+void resetArduino();
 void initializeLCD();
 void ModeOne();
 int UltraSonic();
@@ -13,7 +13,9 @@ void startlcd();
 void OFF();
 void Flash(int dur);
 void NextPrev(int Value);
-
+void PhotoResistor();
+void enterSleep();
+void wakeUp();
 
 // Red Variations
 void RED();
@@ -21,6 +23,7 @@ void R1();
 void R2();
 void R3();
 void YELLOW();
+
 // Green Variations
 void GREEN();
 void G1();
@@ -42,11 +45,18 @@ void WHITE();
 void SPECTRUM();
 void ENHANCED_SPECTRUM();
 
+
+volatile bool sleepMode = false;
+
 // UltraSonic Sensor 
 int Trig = 3;
 int Echo = 2;
 int duration, distance; 
 int reciever = 5;
+
+//PhotoResistor
+int photoresistor = A1;
+int photoresistorled = 6;
 
 //clickers 
 
@@ -96,7 +106,6 @@ unsigned long chminus = 0xFFA25D;
 unsigned long chhh = 0xFF629D;
 
 //other controller 
-
 unsigned long REDB = 0xF720DF;
 unsigned long GREENB = 0xF7A05F;
 unsigned long BLUEB = 0xF7609F;
@@ -121,51 +130,50 @@ unsigned long Smooth = 0xF7E817;
 unsigned long Fade = 0xF7C837;
 unsigned long strobe = 0xF7F00F;
 unsigned long Flashbtn = 0xF7D02F;
-float brightnessFactor = 1.0;
-// Variables for brightness levels
 
-
-
+//this runs once at the boot
 void setup() {
   // Setup for UltraSonic Sensor
   Serial.begin(9600);
   pinMode(Trig, OUTPUT);
   pinMode(Echo, INPUT);
+  
   // Setup for LCD
   LCD.begin(16, 2);
   LCD.backlight();
   LCD.setCursor(0, 0);
+  
   //light
   pinMode (digitalPin, INPUT_PULLUP);
   pinMode (ledPin, OUTPUT);
+  
   //LCD.print("Test.");
   pinMode(redPin, OUTPUT);
   pinMode(greenPin, OUTPUT);
   pinMode(bluePin, OUTPUT);
 
-    // Enable internal pull-ups for button pins
+  // Enable internal pull-ups for button pins
   pinMode(clickbutton, INPUT_PULLUP);
   pinMode(clickbutton1, INPUT_PULLUP);
   pinMode(clickbutton2, INPUT_PULLUP);
   pinMode(clickbutton3, INPUT_PULLUP);
+  
   //IR
   Reciever.enableIRIn();
   initializeLCD();
   delay(300);
 
 }
-
+//this runs continuously
 void loop() {
   //main mode 
- MainMode();
-
+  MainMode();
 }
 
 //Mode One
 void ModeOne()
 {
   // Get distance from UltraSonic sensor
-
   int UltraSonicRes = UltraSonic();
   
   // Clear the LCD screen before displaying the new result
@@ -175,7 +183,7 @@ void ModeOne()
   // Print the distance result
   LCD.print("Distance:");
   LCD.print(UltraSonicRes);
-  LCD.print(" cm"); // Assuming the distance is in cm
+  LCD.print(" cm");
   
   // Add a small delay so the display doesn't flicker too much
   delay(500);
@@ -204,16 +212,23 @@ void HexaIRreciever() {
     LCD.print("Value: ");
     LCD.print(results.value, HEX);
 
-    Reciever.resume();  // Receive the next value
+    if (results.value == ON) {
+      Serial.println("Resetting Arduino...");
+      resetArduino(); // Call the reset function
+    }
+    
+    Reciever.resume();
   }
 }
-
-// Mode three
+void resetArduino() {
+  // Trigger a reset
+  asm volatile ("  jmp 0");
+}
+// The Almighty Main Mode 
 void MainMode() {
   if (Reciever.decode(&results)) {
-
+    int valsm = 0;
     unsigned long value = results.value;
-
     if (value == REDB) {
       startlcd();
       LCD.print("Red Light.");
@@ -325,21 +340,48 @@ void MainMode() {
           Reciever.resume();
         }
       }
-      
+    }
+    else if(value == Fade) {
+      while(true) {
+        PhotoResistor();
+        delay(1000);
+        
+
+        if (Reciever.decode(&results)) {
+          unsigned long newValue = results.value;
+
+          if(newValue != Fade) {
+            value = newValue;
+            break;
+          }
+          Reciever.resume();
+          delay(10);
+        }
+      }
+    }
+    else if (value == Smooth) {
+
+        while (true) {
+          HexaIRreciever();
+          delay(1000);
+        }
+    }
+    else if(value == ON)
+    {
+      resetArduino();
     }
 
     Reciever.resume();  // Prepare for the next signal
   }
 }
-
-
+//the function that starts up the lcd for new data
 void startlcd()
 {
   LCD.clear();
-  LCD.setCursor(0, 1);
+  LCD.setCursor(0, 0);
 }
 
-//Colors 
+//function to set the RGB color 
 void setColor(int redValue, int greenValue, int blueValue) {
     analogWrite(redPin, redValue);
     analogWrite(greenPin, greenValue);
@@ -400,9 +442,9 @@ void initializeLCD() {
   LCD.begin(16, 2);
   LCD.backlight();
   LCD.setCursor(0, 0);
-  LCD.print("This Some LCD");
+  LCD.print("Put in the Damn");
   LCD.setCursor(0, 1);
-  LCD.print("Enter Mode.");
+  LCD.print("Mode, Bitch!");
 }
 
 //ModeFour 
@@ -497,20 +539,16 @@ void NextPrev(unsigned long value) {
     else if(n == 13)
       LCD.print("OFF.");
     
-    
     // Call the current function in the array
     colorFunctions[n](); // Execute the function at index n
 }
 
-
-
-
-
-
-
-
-
-
+void PhotoResistor(){
+  LCD.clear();
+  int Value = analogRead(photoresistor);
+  LCD.print("Light Value: ");  // Print label
+  LCD.print(Value);            // Print the value
+}
 
 
 
